@@ -11,7 +11,7 @@ x-claude: &claude
     context: .
     args:
       CC_VERSION: ${CC_VERSION:-latest}
-  image: claude-docker:${CC_VERSION:-latest}
+  image: ghcr.io/rulikkk/claude-in-docker:${CC_VERSION:-latest}
   env_file: [.env]
   environment:
     PUID: ${PUID:-1000}
