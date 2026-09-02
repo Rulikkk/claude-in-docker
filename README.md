@@ -32,7 +32,7 @@ Defaults:
 mkdir -p data/claude-home data/logs workspace config
 cp .env.example .env && chmod 600 .env
 
-# On a machine WITH A BROWSER, not the server:
+# This will require browser and sign-in to your Claude acct:
 claude setup-token           # -> sk-ant-oat01-..., paste into .env
 
 cp compose.example.yml compose.yml
