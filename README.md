@@ -95,17 +95,22 @@ See `.env.example`.
 
 ### Remote Control
 
-`DISABLE_REMOTE_CONTROL` (default `1`) is the one switch. On, it forces
-`DISABLE_AUTOUPDATER`, `DISABLE_TELEMETRY`, `DISABLE_ERROR_REPORTING` and
-`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` all to `1` — the last of those
-also turns off feature-flag evaluation, which is what actually breaks RC.
-Off (`0`), `entrypoint.sh` forces all four back to `0`.
+`DISABLE_REMOTE_CONTROL` (default `1`) is the one switch. On, it forces the
+four vars [Anthropic's docs](https://code.claude.com/docs/en/remote-control#requirements)
+name as disabling the feature-flag evaluation RC eligibility depends on —
+`DISABLE_TELEMETRY`, `DO_NOT_TRACK`, `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`,
+`DISABLE_GROWTHBOOK` — all to `1`. Off (`0`), `entrypoint.sh` forces all four
+back to `0`. `DISABLE_AUTOUPDATER` and `DISABLE_ERROR_REPORTING` are not on
+that list and are untouched by this switch.
 
 Only one login method can drive a Remote Control session: a full interactive
-`/login`. A `claude setup-token` credential (`CLAUDE_CODE_OAUTH_TOKEN`) makes
-model requests but cannot start RC. If `DISABLE_REMOTE_CONTROL=0` and
-`CLAUDE_CODE_OAUTH_TOKEN` is also set, the entrypoint logs a warning — run
-`claude` interactively in that container instead.
+`/login` (`claude auth login`). A `claude setup-token` credential
+(`CLAUDE_CODE_OAUTH_TOKEN`) makes model requests but cannot start RC — the
+CLI's own error for this is "Remote Control requires a full-scope login
+token". If `DISABLE_REMOTE_CONTROL=0` and `CLAUDE_CODE_OAUTH_TOKEN` is also
+set, the entrypoint logs a warning — run `claude auth login` in that
+container instead. API keys are not supported for Remote Control at all,
+under any auth mode.
 
 ## claude-run.sh
 

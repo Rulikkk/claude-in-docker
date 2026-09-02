@@ -30,12 +30,13 @@ ENV LANG=en_US.UTF-8 \
 ENV CLAUDE_CONFIG_DIR=/home/node/.claude
 
 # DISABLE_REMOTE_CONTROL is the single switch for whether this container can
-# be driven by Remote Control. Default "1" (off) sets DISABLE_AUTOUPDATER,
-# DISABLE_TELEMETRY, DISABLE_ERROR_REPORTING and
-# CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC to "1" — the last of those also
-# disables feature-flag evaluation, which is what actually breaks Remote
-# Control. Set to "0" to enable RC; entrypoint.sh reconciles all four vars
-# from this one at every start, so setting it here is just the image default.
+# be driven by Remote Control. Default "1" (off) sets the four vars
+# Anthropic's docs name as disabling the feature-flag evaluation RC
+# eligibility depends on — DISABLE_TELEMETRY, DO_NOT_TRACK,
+# CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC, DISABLE_GROWTHBOOK — to "1".
+# https://code.claude.com/docs/en/remote-control#requirements
+# Set to "0" to enable RC; entrypoint.sh reconciles all four vars from this
+# one at every start, so setting it here is just the image default.
 ENV DISABLE_REMOTE_CONTROL=1
 
 ENV ENABLE_FIREWALL=1 \
