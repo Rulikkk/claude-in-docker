@@ -31,7 +31,25 @@ if [ -n "${CLAUDE_ALLOWED_TOOLS:-}" ]; then
   ARGS+=(--allowedTools "$CLAUDE_ALLOWED_TOOLS")
 fi
 if [ -n "${CLAUDE_RESUME_SESSION:-}" ]; then
+  # --session-id assigns a fresh id for a NEW conversation; it conflicts
+  # with --resume, which continues an existing one under its own id.
   ARGS+=(--resume "$CLAUDE_RESUME_SESSION")
+  SESSION_ID="$CLAUDE_RESUME_SESSION"
+else
+  SESSION_ID="$(cat /proc/sys/kernel/random/uuid 2>/dev/null || python3 -c "import uuid;print(uuid.uuid4())")"
+  ARGS+=(--session-id "$SESSION_ID")
+fi
+if [ -n "${CLAUDE_NO_SESSION_PERSISTENCE:-}" ]; then
+  ARGS+=(--no-session-persistence)
+fi
+if [ -n "${CLAUDE_RESTRICTED:-}" ]; then
+  ARGS+=(--restricted)
+fi
+if [ -n "${CLAUDE_MAX_BUDGET_USD:-}" ]; then
+  ARGS+=(--max-budget-usd "$CLAUDE_MAX_BUDGET_USD")
+fi
+if [ -n "${CLAUDE_FALLBACK_MODEL:-}" ]; then
+  ARGS+=(--fallback-model "$CLAUDE_FALLBACK_MODEL")
 fi
 
 set +e
@@ -39,8 +57,14 @@ claude "${ARGS[@]}" >"$LOG" 2>"$ERR"
 RC=$?
 set -e
 
-SESSION_ID="$(jq -r 'select(.type=="system" and .subtype=="init") | .session_id' "$LOG" 2>/dev/null | head -n1 || true)"
-[ -n "$SESSION_ID" ] && echo "session_id=$SESSION_ID"
+# Sanity check: the session id claude actually used should match what we
+# passed in. Log a warning if the stream's init event disagrees (or is
+# missing/malformed) but keep using the pre-generated SESSION_ID for output.
+LOGGED_SESSION_ID="$(jq -r 'select(.type=="system" and .subtype=="init") | .session_id' "$LOG" 2>/dev/null | head -n1 || true)"
+if [ -n "$LOGGED_SESSION_ID" ] && [ "$LOGGED_SESSION_ID" != "$SESSION_ID" ]; then
+  echo "WARNING: logged session_id ($LOGGED_SESSION_ID) != requested ($SESSION_ID)" >&2
+fi
+echo "session_id=$SESSION_ID"
 echo "log=$LOG"
 
 [ $RC -eq 0 ] && exit 0
