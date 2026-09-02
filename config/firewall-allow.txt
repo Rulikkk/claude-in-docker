@@ -1,0 +1,7 @@
+# Extra egress destinations, one domain per line. Merged with the built-in
+# Anthropic set and with $FIREWALL_ALLOW_DOMAINS.
+#
+# Every MCP endpoint you use must be listed here or the container will
+# silently lose that server.
+#
+# mcp.atlassian.com
