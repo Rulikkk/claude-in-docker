@@ -78,7 +78,34 @@ Everything is a bind mount, so you can inspect and back up state directly.
 
 Key env vars: `CLAUDE_CODE_OAUTH_TOKEN`, `PUID`/`PGID`, `ENABLE_FIREWALL`,
 `FIREWALL_ALLOW_DOMAINS`, `FIREWALL_ALLOW_SUBNET`, `FIREWALL_REFRESH_SECONDS`,
-`CLAUDE_PERMISSION_MODE`, `CLAUDE_ALLOWED_TOOLS`. See `.env.example`.
+`CLAUDE_PERMISSION_MODE`, `CLAUDE_ALLOWED_TOOLS`, `DISABLE_REMOTE_CONTROL`.
+See `.env.example`.
+
+`claude-run.sh` also recognizes these opt-in vars, all off/unset by default:
+
+- `CLAUDE_NO_SESSION_PERSISTENCE` — set to add `--no-session-persistence`, so
+  the run's transcript is not written to the mounted claude-home.
+- `CLAUDE_RESTRICTED` — set to add `--restricted`, dropping Bash/code-exec
+  tools and confining file tools to the working directory.
+- `CLAUDE_MAX_BUDGET_USD` — dollar amount (e.g. `2.00`); caps spend on that
+  single headless run via `--max-budget-usd`.
+- `CLAUDE_FALLBACK_MODEL` — comma-separated model list; passed to
+  `--fallback-model` so transient overload on the primary model doesn't fail
+  the run outright.
+
+### Remote Control
+
+`DISABLE_REMOTE_CONTROL` (default `1`) is the one switch. On, it forces
+`DISABLE_AUTOUPDATER`, `DISABLE_TELEMETRY`, `DISABLE_ERROR_REPORTING` and
+`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` all to `1` — the last of those
+also turns off feature-flag evaluation, which is what actually breaks RC.
+Off (`0`), `entrypoint.sh` forces all four back to `0`.
+
+Only one login method can drive a Remote Control session: a full interactive
+`/login`. A `claude setup-token` credential (`CLAUDE_CODE_OAUTH_TOKEN`) makes
+model requests but cannot start RC. If `DISABLE_REMOTE_CONTROL=0` and
+`CLAUDE_CODE_OAUTH_TOKEN` is also set, the entrypoint logs a warning — run
+`claude` interactively in that container instead.
 
 ## claude-run.sh
 
@@ -95,7 +122,10 @@ claude-run.sh <prompt-file> [log-dir]
 ```
 
 Prints `session_id=<uuid>` so a caller can store it and later
-`claude --resume <uuid>` to continue that context interactively.
+`claude --resume <uuid>` to continue that context interactively. The id is
+pre-generated (via `/proc/sys/kernel/random/uuid`, falling back to `python3`)
+and passed to `claude` with `--session-id`, rather than relying solely on
+parsing it back out of the stream-json log after the fact.
 
 ## MCP servers
 
