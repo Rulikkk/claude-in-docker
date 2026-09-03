@@ -21,17 +21,21 @@ if [ "$(id -u)" = "0" ]; then
   chown -R node:node /home/node/.claude 2>/dev/null || true
 
   # DISABLE_REMOTE_CONTROL is the one switch to flip. On (default, "1") it
-  # forces all four underlying DISABLE_* vars to "1", including
-  # CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC, which also disables feature-flag
-  # evaluation and is what actually breaks Remote Control. Off ("0") forces
-  # all four to "0" so RC works even if one was left on in the environment.
+  # forces the four vars that Anthropic's own docs name as disabling the
+  # feature-flag evaluation Remote Control eligibility depends on:
+  # https://code.claude.com/docs/en/remote-control#requirements
+  #   DISABLE_TELEMETRY, DO_NOT_TRACK, CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC,
+  #   DISABLE_GROWTHBOOK
+  # DISABLE_AUTOUPDATER and DISABLE_ERROR_REPORTING are NOT on that list and
+  # are not touched here; they stay whatever the Dockerfile/environment sets
+  # them to, independent of Remote Control.
   if [ "${DISABLE_REMOTE_CONTROL:-1}" = "1" ]; then
-    export DISABLE_AUTOUPDATER=1 DISABLE_TELEMETRY=1 DISABLE_ERROR_REPORTING=1 \
-           CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
+    export DISABLE_TELEMETRY=1 DO_NOT_TRACK=1 \
+           CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 DISABLE_GROWTHBOOK=1
     log "Remote Control disabled (DISABLE_REMOTE_CONTROL=1)"
   else
-    export DISABLE_AUTOUPDATER=0 DISABLE_TELEMETRY=0 DISABLE_ERROR_REPORTING=0 \
-           CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=0
+    export DISABLE_TELEMETRY=0 DO_NOT_TRACK=0 \
+           CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=0 DISABLE_GROWTHBOOK=0
     log "Remote Control enabled (DISABLE_REMOTE_CONTROL=0)"
     # A setup-token credential (claude setup-token) can make model requests
     # but cannot establish a Remote Control session; only a full `/login`
