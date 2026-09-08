@@ -81,6 +81,18 @@ Key env vars: `CLAUDE_CODE_OAUTH_TOKEN`, `PUID`/`PGID`, `ENABLE_FIREWALL`,
 `CLAUDE_PERMISSION_MODE`, `CLAUDE_ALLOWED_TOOLS`, `DISABLE_REMOTE_CONTROL`.
 See `.env.example`.
 
+`claude-run.sh` also recognizes these opt-in vars, all off/unset by default:
+
+- `CLAUDE_NO_SESSION_PERSISTENCE` — set to add `--no-session-persistence`, so
+  the run's transcript is not written to the mounted claude-home.
+- `CLAUDE_RESTRICTED` — set to add `--restricted`, dropping Bash/code-exec
+  tools and confining file tools to the working directory.
+- `CLAUDE_MAX_BUDGET_USD` — dollar amount (e.g. `2.00`); caps spend on that
+  single headless run via `--max-budget-usd`.
+- `CLAUDE_FALLBACK_MODEL` — comma-separated model list; passed to
+  `--fallback-model` so transient overload on the primary model doesn't fail
+  the run outright.
+
 ### Remote Control
 
 `DISABLE_REMOTE_CONTROL` (default `1`) is the one switch. On, it forces
@@ -110,7 +122,10 @@ claude-run.sh <prompt-file> [log-dir]
 ```
 
 Prints `session_id=<uuid>` so a caller can store it and later
-`claude --resume <uuid>` to continue that context interactively.
+`claude --resume <uuid>` to continue that context interactively. The id is
+pre-generated (via `/proc/sys/kernel/random/uuid`, falling back to `python3`)
+and passed to `claude` with `--session-id`, rather than relying solely on
+parsing it back out of the stream-json log after the fact.
 
 ## MCP servers
 
