@@ -50,7 +50,7 @@ execs whatever you pass:
 ```yaml
 services:
   worker:
-    image: ghcr.io/you/claude-docker:1.2.3
+    image: ghcr.io/rulikkk/claude-in-docker
     command: ["python3", "/app/worker.py"]
     volumes:
       - ./app:/app:ro
