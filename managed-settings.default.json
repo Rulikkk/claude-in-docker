@@ -1,0 +1,31 @@
+{
+  "_comment": "Secure-by-default permission floor shipped with claude-docker. Read from /etc/claude-code/managed-settings.json at the highest precedence on Linux, so nothing in ~/.claude or a project's .claude/ can loosen it. Bind-mount your own file over this path to replace it wholesale. Denies the network egress surface that matters once untrusted text is in the context window.",
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "disableBypassPermissionsMode": "disable",
+    "deny": [
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(nc:*)",
+      "Bash(ncat:*)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(rsync:*)",
+      "Bash(git push:*)",
+      "Bash(npm:*)",
+      "Bash(pip:*)",
+      "Bash(sudo:*)",
+      "WebFetch",
+      "WebSearch",
+      "Read(/home/node/.claude/**)",
+      "Read(**/.env)",
+      "Read(**/.credentials.json)",
+      "Read(**/id_rsa*)",
+      "Read(**/id_ed25519*)",
+      "Write(/etc/**)",
+      "Edit(/etc/**)",
+      "Write(/usr/**)",
+      "Edit(/usr/**)"
+    ]
+  }
+}

@@ -1,0 +1,56 @@
+# Minimal standalone example. Bind mounts throughout, so everything the
+# container persists is a directory you can see, back up and inspect.
+#
+#   mkdir -p data/claude-home data/logs workspace
+#   cp .env.example .env && chmod 600 .env   # add CLAUDE_CODE_OAUTH_TOKEN
+#   docker compose build
+#   docker compose run --rm console claude -p "hello" --output-format json
+
+x-claude: &claude
+  build:
+    context: .
+    args:
+      CC_VERSION: ${CC_VERSION:-latest}
+  image: claude-docker:${CC_VERSION:-latest}
+  env_file: [.env]
+  environment:
+    PUID: ${PUID:-1000}
+    PGID: ${PGID:-1000}
+    TZ: ${TZ:-UTC}
+    ENABLE_FIREWALL: ${ENABLE_FIREWALL:-1}
+    FIREWALL_REFRESH_SECONDS: ${FIREWALL_REFRESH_SECONDS:-3600}
+  # Required by the egress firewall. Remove these ONLY together with
+  # ENABLE_FIREWALL=0; otherwise the container fails to start, on purpose.
+  cap_add:
+    - NET_ADMIN
+    - NET_RAW
+  volumes:
+    # Login, per-project trust, session transcripts. Losing this means re-auth.
+    - ./data/claude-home:/home/node/.claude
+    # Read-only config: firewall-allow.txt, mcp-servers.txt, claude-home/ seeds
+    - ./config:/config:ro
+    - ./data/logs:/data/logs
+    # Whatever Claude is meant to work on
+    - ./workspace:/workspace
+  working_dir: /workspace
+
+services:
+  console:
+    <<: *claude
+    profiles: [manual]
+    stdin_open: true
+    tty: true
+    command: ["claude"]
+
+  agent:
+    <<: *claude
+    restart: unless-stopped
+    # Downstream replaces this with its own worker. Do not override the
+    # entrypoint; drop scripts into /docker-entrypoint.d/ instead.
+    command: ["sleep", "infinity"]
+    healthcheck:
+      test: ["CMD", "claude", "--version"]
+      interval: 5m
+      timeout: 30s
+      retries: 3
+      start_period: 30s
