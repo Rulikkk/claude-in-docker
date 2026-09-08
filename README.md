@@ -78,7 +78,22 @@ Everything is a bind mount, so you can inspect and back up state directly.
 
 Key env vars: `CLAUDE_CODE_OAUTH_TOKEN`, `PUID`/`PGID`, `ENABLE_FIREWALL`,
 `FIREWALL_ALLOW_DOMAINS`, `FIREWALL_ALLOW_SUBNET`, `FIREWALL_REFRESH_SECONDS`,
-`CLAUDE_PERMISSION_MODE`, `CLAUDE_ALLOWED_TOOLS`. See `.env.example`.
+`CLAUDE_PERMISSION_MODE`, `CLAUDE_ALLOWED_TOOLS`, `DISABLE_REMOTE_CONTROL`.
+See `.env.example`.
+
+### Remote Control
+
+`DISABLE_REMOTE_CONTROL` (default `1`) is the one switch. On, it forces
+`DISABLE_AUTOUPDATER`, `DISABLE_TELEMETRY`, `DISABLE_ERROR_REPORTING` and
+`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` all to `1` — the last of those
+also turns off feature-flag evaluation, which is what actually breaks RC.
+Off (`0`), `entrypoint.sh` forces all four back to `0`.
+
+Only one login method can drive a Remote Control session: a full interactive
+`/login`. A `claude setup-token` credential (`CLAUDE_CODE_OAUTH_TOKEN`) makes
+model requests but cannot start RC. If `DISABLE_REMOTE_CONTROL=0` and
+`CLAUDE_CODE_OAUTH_TOKEN` is also set, the entrypoint logs a warning — run
+`claude` interactively in that container instead.
 
 ## claude-run.sh
 
