@@ -22,10 +22,17 @@ STAMP="$(date -u +%Y%m%dT%H%M%S%3NZ)"
 LOG="$LOG_DIR/$STAMP.jsonl"
 ERR="$LOG.err"
 
+# dontAsk denies anything not covered by an explicit permissions.allow rule
+# (rather than acceptEdits, which auto-approves edits anywhere under the
+# working directory) - the safer default for a job runner explicitly built
+# for unattended, untrusted-input use. --permission-prompts none means a
+# call that WOULD have needed a human answer is denied immediately instead
+# of hanging: nobody is here to answer it. Requires Claude Code v2.1.259+.
 ARGS=(-p "$(cat "$PROMPT_FILE")"
       --output-format stream-json
       --verbose
-      --permission-mode "${CLAUDE_PERMISSION_MODE:-acceptEdits}")
+      --permission-mode "${CLAUDE_PERMISSION_MODE:-dontAsk}"
+      --permission-prompts none)
 
 if [ -n "${CLAUDE_ALLOWED_TOOLS:-}" ]; then
   ARGS+=(--allowedTools "$CLAUDE_ALLOWED_TOOLS")
@@ -53,6 +60,9 @@ if [ -n "${CLAUDE_FALLBACK_MODEL:-}" ]; then
 fi
 if [ -n "${CLAUDE_MODEL:-}" ]; then
   ARGS+=(--model "$CLAUDE_MODEL")
+fi
+if [ -n "${CLAUDE_ADD_DIR:-}" ]; then
+  ARGS+=(--add-dir "$CLAUDE_ADD_DIR")
 fi
 
 set +e

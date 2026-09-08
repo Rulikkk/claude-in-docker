@@ -94,6 +94,10 @@ See `.env.example`.
   the run outright.
 - `CLAUDE_MODEL` — passed to `--model`. Unset uses the CLI's own default —
   claude-run.sh does not pick a model on your behalf.
+- `CLAUDE_ADD_DIR` — passed to `--add-dir`. File reads (Read/Grep/Glob) are
+  always free within the working directory *and* any additional directory,
+  regardless of permission mode — use this to grant read access to a wider
+  tree than the working directory without touching what edits are allowed.
 
 ### Remote Control
 
@@ -133,6 +137,19 @@ Prints `session_id=<uuid>` so a caller can store it and later
 pre-generated (via `/proc/sys/kernel/random/uuid`, falling back to `python3`)
 and passed to `claude` with `--session-id`, rather than relying solely on
 parsing it back out of the stream-json log after the fact.
+
+Defaults `CLAUDE_PERMISSION_MODE` to `dontAsk`, not `acceptEdits` —
+`dontAsk` denies anything not covered by an explicit `permissions.allow`
+rule, where `acceptEdits` auto-approves edits anywhere under the working
+directory. The latter is the wrong default here specifically because a
+downstream consumer's working directory can be wider than the one place it
+actually wants writes allowed (e.g. a whole vault mounted for read context,
+writes meant to land in one subfolder of it) — `permissions.allow` rules
+still work normally under `dontAsk`, only the *unlisted* paths get locked
+down. Also always passes `--permission-prompts none`: nobody is here to
+answer a prompt, so anything that would need one is denied immediately
+instead of hanging. Override `CLAUDE_PERMISSION_MODE` if a downstream
+consumer genuinely wants the old broader behavior.
 
 ## MCP servers
 
