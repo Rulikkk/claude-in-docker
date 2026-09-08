@@ -92,6 +92,8 @@ See `.env.example`.
 - `CLAUDE_FALLBACK_MODEL` — comma-separated model list; passed to
   `--fallback-model` so transient overload on the primary model doesn't fail
   the run outright.
+- `CLAUDE_MODEL` — passed to `--model`. Unset uses the CLI's own default —
+  claude-run.sh does not pick a model on your behalf.
 
 ### Remote Control
 

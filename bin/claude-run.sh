@@ -51,6 +51,9 @@ fi
 if [ -n "${CLAUDE_FALLBACK_MODEL:-}" ]; then
   ARGS+=(--fallback-model "$CLAUDE_FALLBACK_MODEL")
 fi
+if [ -n "${CLAUDE_MODEL:-}" ]; then
+  ARGS+=(--model "$CLAUDE_MODEL")
+fi
 
 set +e
 claude "${ARGS[@]}" >"$LOG" 2>"$ERR"
