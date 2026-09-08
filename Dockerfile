@@ -29,12 +29,14 @@ ENV LANG=en_US.UTF-8 \
 # and directory trust across container recreates.
 ENV CLAUDE_CONFIG_DIR=/home/node/.claude
 
-ENV DISABLE_AUTOUPDATER=1 \
-    DISABLE_TELEMETRY=1 \
-    DISABLE_ERROR_REPORTING=1
-
-# Deliberately NOT setting CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: it also
-# disables feature-flag evaluation, which breaks Remote Control.
+# DISABLE_REMOTE_CONTROL is the single switch for whether this container can
+# be driven by Remote Control. Default "1" (off) sets DISABLE_AUTOUPDATER,
+# DISABLE_TELEMETRY, DISABLE_ERROR_REPORTING and
+# CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC to "1" — the last of those also
+# disables feature-flag evaluation, which is what actually breaks Remote
+# Control. Set to "0" to enable RC; entrypoint.sh reconciles all four vars
+# from this one at every start, so setting it here is just the image default.
+ENV DISABLE_REMOTE_CONTROL=1
 
 ENV ENABLE_FIREWALL=1 \
     PUID=1000 \
