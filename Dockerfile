@@ -11,7 +11,7 @@ ARG CC_VERSION=latest
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates curl git gosu iproute2 ipset iptables jq locales \
-      python3 ripgrep tini \
+      python3 python3-yaml ripgrep tini \
  && sed -i '/^# *en_US.UTF-8 UTF-8/s/^# *//' /etc/locale.gen \
  && locale-gen \
  && rm -rf /var/lib/apt/lists/*
