@@ -1,0 +1,6 @@
+# One `claude mcp add` command per line, exactly as you would type it.
+# Env vars are expanded at install time, so tokens stay in .env.
+#
+#   docker compose run --rm console install-mcp-servers.sh
+#
+# claude mcp add -s user --transport http rovo "${ATLASSIAN_MCP_URL}"
